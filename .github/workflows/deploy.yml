@@ -1,0 +1,31 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Build and Push to GitHub Container Registry"]
+    branches:
+      - main
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup SSH
+        uses: MrSquaare/ssh-setup-action@v2
+        with:
+          host: medconnect-ma.online
+          private-key: ${{ secrets.SSH_KEY }}
+        
+      - name: Log In to GitHub Container Registry on Server
+        run: ssh root@medconnect-ma.online 'echo "${{ secrets.GITHUB_TOKEN }}" | docker login https://ghcr.io -u ${{ github.actor }} --password-stdin'
+      
+      - name: Pull Image from GitHub Container Registry
+        run: ssh root@medconnect-ma.online 'docker pull ghcr.io/medconnectma/api-gateway:latest'
+
+      - name: Run docker-compose on Server
+        run: ssh root@medconnect-ma.online 'sudo docker-compose -f ~/app/docker-compose.yml up -d api-gateway'
