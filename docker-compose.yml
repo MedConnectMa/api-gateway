@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  api-gateway:
+    build: .
+    container_name: medconnect-api-gateway
+    command: npm run dev
+    ports:
+    - 8000:8000
