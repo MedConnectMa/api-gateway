@@ -6,3 +6,5 @@ services:
     command: npm run dev
     ports:
     - 8000:8000
+    volumes:
+    - ./index.js:/app/index.js
